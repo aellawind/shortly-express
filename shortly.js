@@ -93,7 +93,9 @@ app.get('/signup', function(req, res) {
 });
 
 app.get('/login', function(req, res) {
+    console.log('gets to login');
   util.redirectIfLoggedIn(req,res, function(res) {
+    console.log('gets to login inner function');
     res.render('login');
   });
 });
@@ -120,7 +122,7 @@ app.post('/signup', function(req, res) {
       });
 
       newUser.save().then(function(newUser) {
-        console.log("Saved!", newUser);
+        console.log("Saved!!!!!", newUser);
         util.generateSessionKey(req,res);
       });
     }

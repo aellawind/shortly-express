@@ -11,15 +11,14 @@ var User = db.Model.extend({
 
   initialize: function(userObj) {
     console.log('USer created!');
-
+    var self = this;
     bcrypt.hash(userObj.password, null, null, function(err, hash){
       if (err) {
         console.log(err);
         throw err;
       } else {
-        console.log("Hash", hash);
-        this.username = userObj.username;
-        this.password = hash;
+        self.set('username', userObj.username);
+        self.set('password',hash);
       }
     });
   }
