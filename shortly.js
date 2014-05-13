@@ -8,6 +8,8 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 var app = express();
 
@@ -17,6 +19,8 @@ app.configure(function() {
   app.use(partials());
   app.use(express.bodyParser())
   app.use(express.static(__dirname + '/public'));
+  app.use(cookieParser());
+  app.use(session({secret: 'keyboard cat'}));
 });
 
 app.get('/', function(req, res) {
@@ -30,7 +34,7 @@ app.get('/create', function(req, res) {
 app.get('/links', function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
-  })
+  });
 });
 
 app.post('/links', function(req, res) {
@@ -69,6 +73,72 @@ app.post('/links', function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+
+
+app.post('/signup', function(req, res) {
+  // look at the user name and password provided -figure out how this is sent , check the req body
+  // check against the db that the username doesn't already exist - *EC* check with every letter if it exists
+  // if it doesn't, then we add it to the database *EC* send user to confirmation page
+  // password - hash the password, using bcrypt, which handles the salting!
+  // redirect to the index
+  // console.log(req.body);
+
+
+  new User({username:req.body.username}).fetch().then(function(found){
+    if (found) {
+      console.log('this username already exists');
+      res.end();
+    } else {
+      var newUser = new User({
+        username: req.body.username,
+        password: req.body.password
+      });
+
+      newUser.save().then(function(newUser) {
+        console.log("Saved!", newUser);
+        // start a session and basically have a token for the user and redirect to the index
+        res.end();
+      });
+    }
+  });
+});
+
+app.post('/login', function(req, res) {
+  // session creation
+
+  // check the username and password against the db
+  new User ({
+    username: req.body.username,
+    password: req.body.password
+  }).fetch().then(function(found) {
+    if (found) {
+      //start session
+      //send cookie
+      req.session.regenerate(function(){
+        req.session.user = req.body.username;
+        res.redirect('/');
+      });
+    } else {
+      console.log("bad username/pass combo");
+      //handle invalid username + password
+      res.end();
+    }
+  });
+
+
+  // hashed password! bcrypt salting
+  // if it checks out, start a session, add the token to the sessions table and make sure we set the expiration date
+  // and THEN redirect to the index
+});
+
 
 
 
