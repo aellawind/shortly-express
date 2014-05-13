@@ -43,6 +43,12 @@ app.get('/links', function(req, res) {
   });
 });
 
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(){
+    res.redirect('/login');
+  });
+});
+
 app.post('/links', function(req, res) {
   util.checkSession(req,res, function(req,res) {
     var uri = req.body.url;
